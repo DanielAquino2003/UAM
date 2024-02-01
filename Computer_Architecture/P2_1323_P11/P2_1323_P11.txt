@@ -1,0 +1,47 @@
+Integrantes:
+-Daniel Aquino Santiago
+-Jorge Paniagua Moreno
+
+Hemos logrado realizar el apartado a y b del ejercicio uno, hemos implementado la unidad de adelantamiento. Como podemos ver en las diapositivas de teoria, para identificar la necesidad de realizar la operacion de adelantamiento en EX STAGE hemos añadido: 
+IF Ctrl_RegWrite_MEM = '1' THEN
+        IF (RD_MEM /= "00000" AND (RD_MEM = instruccion_EX(19 DOWNTO 15))) THEN
+          MuxFU1 <= "10";
+          ResMuxFU1 <= Alu_Res_MEM;
+        ELSIF (RD_MEM /= "00000" AND (RD_MEM = instruccion_EX(24 DOWNTO 20))) THEN
+          MuxFU2 <= "10";
+          ResMuxFU2 <= Alu_Res_MEM;
+        END IF;
+      END IF; como en el MEM STAGE
+Y en MEM STAGE:
+IF (Ctrl_RegWrite_WB = '1'
+        AND (RD_WB /= "00000")
+        AND NOT(Ctrl_RegWrite_MEM = '1' AND (RD_MEM /= "00000")
+        AND (RD_MEM /= RS1))
+        AND (RD_WB = RS1)) THEN MuxFU1 <= "01";
+      ELSIF (Ctrl_RegWrite_WB = '1'
+        AND (RD_WB /= "00000")
+        AND NOT(Ctrl_RegWrite_MEM = '1' AND (RD_MEM /= "00000")
+        AND (RD_MEM /= RS2))
+        AND (RD_WB = RS2)) THEN MuxFU2 <= "01";
+      END IF;
+Ademas la respuesta del apartado b es simple, para lograr un forwarding de datos del banco de registros deberemos hacer que el proceso de dicho componente funciona para los ciclos de bajada del clk.
+
+Para el apartado 1c no hemos conseguido una implementacion funcional pero hemos llegado a diferentes conclusiones:
+	Tenemos claro que para lograr esto deberemos encontrar la necesidad de hacer uso de la Hazard detection Unit, para ello deberemos agregar la siguiente condicion en la fase de ID/EX "IF Ctrl_MemRead_EX = '1' and ((RD_EX = reg_RS1) OR (RD_EX = reg_RS2)" pondremos todos los registros de control de dicha etapa a 0, y en las etapas de MEM Y WB se realizara instruccion NOP, es decir los registros no se actualizaran. y deveremos prevenir la actualizacion de unnuev PC.
+  y deberemos de agregar lo siguiente:
+  _D_U :  process(all)
+    begin
+      if(Ctrl_MemRead_EX = '1' and ((RD_EX = RS1) or (RD_EX = RS2))) THEN
+        Flush <= '1':
+        IF_ID_Write <= '1';
+        PCWrite <= '1';
+      else
+        Flush <= '0';
+        IF_ID_WRITE <= '0';
+        PCWrite <= '0';
+      end if;
+    end process;
+
+Ademas hemos incluido una seria de programas en ensamblador para probar todas las partes restantes de la practica
+
+Hasta donde esta realizado se ha comprobado con un programa muy simple llamado "prueba_test_forwarding.asm"
