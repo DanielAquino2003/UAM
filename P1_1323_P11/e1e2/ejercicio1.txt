@@ -1,0 +1,1 @@
+Las instrucciones no soportadas son los saltos "j, jal". Esto sucede por que la implementacion actual del procesador. Ademas es observable que no tienen OPcode y que al tratar de hacer uso de ellas, no hay reultado
